@@ -1,0 +1,20 @@
+<!--div>
+    <label for="llm-dropdown">Select LLM</label>
+    <select class="dropdown" id="llm-dropdown" [(ngModel)]="selectedLlm" (change)="changeLLM($event)">
+        <option *ngFor="let item of llmList" [value]="item.value">{{item.label}}</option>
+    </select>
+</div-->
+
+<div class="llm-selector">
+    <p>Select LLM</p>
+    <div class="dropdown" (click)="toggleDropdown()">
+        <div class="selected">
+            {{ selectedLlm.label }}
+        </div>
+        <ul class="options" *ngIf="isDropDownOpen">
+            <li class="option" *ngFor="let item of getLlmList()" (click)="changeLLM(item)">
+                {{ item.label }}
+            </li>
+        </ul>
+    </div>
+</div>

@@ -3,6 +3,8 @@ import { LlmService } from '../llm.service';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators  } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { AbstractControl, ValidationErrors } from '@angular/forms';
+import { Router } from '@angular/router';
+import { InternalStorageService, Details } from '../internal-storage.service';
 
 @Component({
   selector: 'app-connection-init',
@@ -16,7 +18,12 @@ export class ConnectionInitComponent implements OnInit{
   address: string | null = null;
   form: FormGroup;
 
-  constructor(private llmService: LlmService, fb: FormBuilder) {
+  constructor(
+    private llmService: LlmService, 
+    fb: FormBuilder, 
+    private router: Router,
+    private internalStorage: InternalStorageService
+  ) {
     this.form = fb.group(
       {
         llmAddress : ['', [Validators.required, Validators.minLength(1)]]
@@ -33,7 +40,8 @@ export class ConnectionInitComponent implements OnInit{
   async onSubmit() {
 
     if(!this.form.pristine && (this.form.get("llmAddress")?.valid && !this.form.errors?.["input-address"]) && !this.form.pending) {
-      console.log("Submitted!!");
+      this.internalStorage.set(Details.ADDRESS, this.form.get("llmAddress")?.value);
+      this.router.navigate(['/home']);
     }
   }
 }

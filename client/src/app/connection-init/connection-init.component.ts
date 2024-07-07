@@ -32,8 +32,7 @@ export class ConnectionInitComponent implements OnInit{
 
   async onSubmit() {
 
-    console.log("Entry!!");
-    if(this.form.valid && !this.form.errors?.["input-address"]) {
+    if(!this.form.pristine && (this.form.get("llmAddress")?.valid && !this.form.errors?.["input-address"]) && !this.form.pending) {
       console.log("Submitted!!");
     }
   }

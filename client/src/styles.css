@@ -2,6 +2,7 @@ body {
     background-image: url('../circuit-board.jpg');
     background-size: cover;
     background-repeat: no-repeat;
-    background-position: center center;
+    background-position: center;
     background-color: #222221;
+    height : 100vh
 }

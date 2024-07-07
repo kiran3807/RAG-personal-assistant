@@ -1,5 +1,5 @@
 .chat-messages {
-    font-family: Arial, sans-serif;
+    font-family: 'OCR A Std', monospace;
     display: flex;
     /*justify-content: center;*/
     align-items: center;

@@ -1,5 +1,10 @@
 .llm-selector {
-    margin : 1rem
+    margin: 1rem;
+    color: #fff;
+    font-family:'Courier New', Courier, monospace;
+    font-weight: 700;
+    position: relative;
+    left: 1vw;
 }
 
 .dropdown {
@@ -12,8 +17,6 @@
     font-family: 'Courier New', monospace;
     width: 20vw;
     height: 4vh;
-    position: relative;
-    left: 1vw;
 }
 .options {
     background-color: #fff;

@@ -5,6 +5,8 @@ from flask import Flask, request, jsonify
 import time
 import asyncio
 from flask_socketio import SocketIO, emit, disconnect
+from flask_cors import CORS, cross_origin 
+
 
 from llm_interactor import LlmInteractor, LLM_TYPE
 from errors import UNSUPPORTED_LLM
@@ -12,8 +14,16 @@ from errors import UNSUPPORTED_LLM
 app = Flask(__name__)
 # socketio = SocketIO(app,debug=True,cors_allowed_origins='*',async_mode='eventlet')
 socketio = SocketIO(app,debug=True,cors_allowed_origins='*')
+CORS(app)
 
 llm_interactor = LlmInteractor()
+
+@app.route('/api/check_connection', methods=['GET'])
+def check_connection():
+    message = {
+        'connected': True
+    }
+    return jsonify(message)
 
 @app.route('/api/set_llm', methods=['POST'])
 def set_llm():

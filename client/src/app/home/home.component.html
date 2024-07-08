@@ -1,7 +1,7 @@
 <div class="content">
     <div class="taskbar">
         <app-llm-selector></app-llm-selector>
-        <button class="resetButton">Reset details</button>
+        <button (click)="navigateConnectionInit($event)" class="resetButton">Reset details</button>
     </div>
 
     <app-chat-display></app-chat-display>

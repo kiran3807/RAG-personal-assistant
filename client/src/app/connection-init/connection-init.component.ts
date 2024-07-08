@@ -4,6 +4,10 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators  } from '@angul
 import { CommonModule } from '@angular/common';
 import { AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient, HttpHeaders, HttpClientModule } from '@angular/common/http';
+import { map, catchError } from 'rxjs/operators';
+import { of } from 'rxjs';
+
 import { InternalStorageService, Details } from '../internal-storage.service';
 
 @Component({
@@ -22,14 +26,31 @@ export class ConnectionInitComponent implements OnInit{
     private llmService: LlmService, 
     fb: FormBuilder, 
     private router: Router,
-    private internalStorage: InternalStorageService
+    private internalStorage: InternalStorageService,
+    private http: HttpClient
   ) {
     this.form = fb.group(
       {
         llmAddress : ['', [Validators.required, Validators.minLength(1)]]
       },
       {
-        asyncValidators : [validateLlmConnection],
+        asyncValidators : [(control: AbstractControl)=> {
+          
+          const addr = control.get("llmAddress")?.value;
+          return this.http.get(`http://${addr}/api/check_connection`)
+          .pipe(
+            catchError((error)=> {
+              return of({connected:false});
+            }))
+          .pipe(
+            map((result: any)=> {
+              if(result.connected) {
+                return { invalidAddress : false};
+              }else {
+                return { invalidAddress : true};
+              }
+            }));
+        }],
         updateOn: "blur"
       }
     );
@@ -44,14 +65,4 @@ export class ConnectionInitComponent implements OnInit{
       this.router.navigate(['/home']);
     }
   }
-}
-
-function validateLlmConnection(control: AbstractControl): Promise<ValidationErrors> {
-
-  const addr = control.get("input-address");
-  return new Promise((res, rej)=> {
-    setTimeout(()=> {
-      res({ invalidAddress : true});
-    }, 2000);
-  });
 }

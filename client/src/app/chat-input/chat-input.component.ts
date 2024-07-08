@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 
+import { LlmService } from '../llm.service';
+
 @Component({
   selector: 'app-chat-input',
   standalone: true,
@@ -9,4 +11,9 @@ import { Component } from '@angular/core';
 })
 export class ChatInputComponent {
 
+  constructor(private llmService: LlmService) {}
+
+  sendQuery(query: string) {
+    this.llmService.queryLLM();
+  }
 }

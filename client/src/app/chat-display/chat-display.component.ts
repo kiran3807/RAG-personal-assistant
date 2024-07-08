@@ -14,10 +14,18 @@ export class ChatDisplayComponent implements AfterViewInit {
   constructor(private llmService: LlmService) {}
 
   ngAfterViewInit() {
-    
-    const observer$ = this.llmService.queryLLM();
-    observer$.subscribe(data=> {
-      this.data = this.data + data;
+    const answerObservable = this.llmService.getLlmAnswerObservable();
+    answerObservable.subscribe({
+      next: (value)=> {
+        this.data = this.data + value;
+      },
+      error: (err)=> {
+        console.log("Error while chatting with LLM");
+      }
     });
+  }
+
+  clearScreen() {
+    this.data = "";
   }
 }

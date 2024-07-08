@@ -2,6 +2,8 @@ import { Component, AfterViewInit } from '@angular/core';
 import { LlmService } from '../llm.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { InternalStorageService, Details } from '../internal-storage.service';
 
 type LlmItem = {value: string, label: string}
 
@@ -17,16 +19,41 @@ export class LlmSelectorComponent implements AfterViewInit {
   llmList: LlmItem[] = [];
   selectedLlm: LlmItem = {value: "", label : ""};
   isDropDownOpen = false;
+  showLoader = false;
 
-  constructor(private llmService: LlmService) {}
+  constructor(
+    private llmService: LlmService, 
+    private http: HttpClient,
+    private internalStorage: InternalStorageService
+  ) {}
 
   getLlmList() {
     return this.llmList.filter(item=>item.value != this.selectedLlm.value)
   }
 
   changeLLM(llmItem: any) {
-    this.selectedLlm = llmItem;
-    console.log("sending this to server: ", this.selectedLlm);
+    
+    this.showLoader = true;
+    const address = this.internalStorage.get(Details.ADDRESS);
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
+    const data = {
+      llm_type: llmItem.value
+    }
+    this.http.post<any>(`http://${address}/api/set_llm`, data, { headers }).subscribe({
+      next : (res)=> {
+        console.log(res.message);
+        this.selectedLlm = llmItem;
+      },
+      error : (err)=> {
+        console.error(err);
+      },
+      complete: ()=> {
+        this.showLoader = false;
+      }
+    });
+    
   }
 
   toggleDropdown() {

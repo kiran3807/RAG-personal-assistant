@@ -7,7 +7,7 @@
 
 <div class="llm-selector">
     <p>Select LLM</p>
-    <div class="dropdown" (click)="toggleDropdown()">
+    <div class="dropdown" (click)="toggleDropdown()" *ngIf="!showLoader else loader">
         <div class="selected">
             {{ selectedLlm.label }}
         </div>
@@ -17,4 +17,7 @@
             </li>
         </ul>
     </div>
+    <ng-template #loader>
+        <div class="loader"></div>
+    </ng-template>
 </div>

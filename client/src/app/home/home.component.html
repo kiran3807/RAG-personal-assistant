@@ -1,0 +1,9 @@
+<div class="content">
+    <div class="taskbar">
+        <app-llm-selector></app-llm-selector>
+        <button (click)="navigateConnectionInit($event)" class="resetButton">Reset details</button>
+    </div>
+
+    <app-chat-display [querySent]="querySentObservable"></app-chat-display>
+    <app-chat-input (queryEvent)="onQuerySend()"></app-chat-input>
+</div>

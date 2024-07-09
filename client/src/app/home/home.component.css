@@ -1,0 +1,20 @@
+.taskbar {
+    display: flex;
+}
+
+.resetButton {
+    background: transparent;
+    border: solid 3px #f6f8f8;
+    color: #f9fafa;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    font-size: 1rem;
+    width: 11vw;
+    height: 6vh;
+    margin-left: auto;
+    position: relative;
+    top: 2rem;
+    right: 2rem;
+}

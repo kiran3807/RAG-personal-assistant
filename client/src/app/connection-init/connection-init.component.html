@@ -1,0 +1,18 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="connection-init">
+        <p>Provide LLM host address to connect</p>
+        <input type="text" id="llm-address" formControlName="llmAddress"/>
+        <p class="error" *ngIf="!form.pristine && form.get('llmAddress')?.invalid && !form.pending">
+            Address cannot be empty
+        </p>
+        <p class="error" *ngIf="!form.get('llmAddress')?.invalid && form.errors?.['invalidAddress'] && !form.pending">
+            LLM machine not active at this address
+        </p>
+        <div *ngIf="!form.get('llmAddress')?.invalid && form.pending" class="loader"></div>
+        <button [ngClass]="{'button-disabled' : form.pristine || (form.get('llmAddress')?.invalid || form.errors?.['invalidAddress']) || form.pending}" 
+            [disabled]="form.pristine || (form.get('llmAddress')?.invalid || form.errors?.['invalidAddress']) || form.pending">
+            Proceed
+        </button>
+
+    </div>
+</form>

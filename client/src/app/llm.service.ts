@@ -1,6 +1,18 @@
 import { Injectable } from '@angular/core';
-import { Observable, Subscriber, of } from 'rxjs';
+import { Observable, Subscriber, of, map } from 'rxjs';
+import { io, Socket } from 'socket.io-client';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
+import { InternalStorageService, Details } from './internal-storage.service';
+
+enum SockEvents {
+  SEND = "stream_response",
+  RECIEVE = "server_stream_response"
+}
+
+export const RESP_TERMINAL = "RESP_TERMINAL_NULL";
+
+export type ActiveLlms = {options : string[], selected : string};
 @Injectable({
   providedIn: 'root'
 })
@@ -8,38 +20,58 @@ export class LlmService {
   
   answerSubscriber: Subscriber<string> | null = null;
   answerObservable: Observable<string>;
-  constructor() { 
+  socketConn: Socket;
+  addr: string | null = null;
+
+  constructor(
+    private internalStorage: InternalStorageService, 
+    private http: HttpClient
+  ) { 
+
+    this.addr = this.internalStorage.get(Details.ADDRESS);
     this.answerObservable = new Observable(subscriber=> {
       this.answerSubscriber = subscriber;
-    })
+    });
+
+    this.socketConn = io(`http://${this.addr}`);
+    this.socketConn.on(SockEvents.RECIEVE, (resp)=> {
+      if(resp.end) {
+        this.answerSubscriber?.next(` (total time taken: ${resp.time_taken})`);
+        this.answerSubscriber?.next(`${RESP_TERMINAL}`);
+        //this.answerSubscriber?.complete();
+      }else {
+        this.answerSubscriber?.next(resp.data);
+      }
+    });
   }
 
   getLlmAnswerObservable() {
     return this.answerObservable;
   }
 
-  async getLlmList(): Promise<{options : string[], selected : string}> {
-    return {
-      options : ["PHI", "YI", "LLAMA"],
-      selected : "PHI"
-    } 
+  getLlmList(): Observable<ActiveLlms> {
+
+    return this.http.get<ActiveLlms>(`http://${this.addr}/api/get_llm_list`);
   }
 
-  queryLLM() {
+  setLlm(llmType: string): Observable<string> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json'
+    });
 
-    const dataIterator = [
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Est lorem ipsum dolor sit amet consectetur adipiscing elit pellentesque. Lacus suspendisse faucibus interdum posuere lorem ipsum. Enim nec dui nunc mattis enim ut tellus. Mauris commodo quis imperdiet massa tincidunt nunc pulvinar sapien et. Purus faucibus ornare suspendisse sed nisi lacus sed viverra tellus. Nullam non nisi est sit amet. Tellus in hac habitasse platea. Eleifend donec pretium vulputate sapien nec sagittis. Adipiscing commodo elit at imperdiet dui accumsan sit amet.",
-      "\n\n Eu tincidunt tortor aliquam nulla facilisi cras fermentum odio eu. Accumsan tortor posuere ac ut. Consectetur lorem donec massa sapien faucibus et molestie ac. Lectus vestibulum mattis ullamcorper velit. Placerat in egestas erat imperdiet sed euismod nisi porta lorem. Id volutpat lacus laoreet non curabitur gravida arcu. Duis at tellus at urna condimentum. Auctor elit sed vulputate mi sit amet mauris commodo quis. Lectus mauris ultrices eros in cursus turpis massa. Quam viverra orci sagittis eu volutpat odio. Vitae semper quis lectus nulla at volutpat diam ut. Nibh sit amet commodo nulla facilisi. Iaculis eu non diam phasellus. Consectetur lorem donec massa sapien faucibus. Consequat semper viverra nam libero justo laoreet sit amet. Semper auctor neque vitae tempus quam pellentesque nec nam. Et malesuada fames ac turpis.",
-      "\n\n Eu tincidunt tortor aliquam nulla facilisi cras fermentum odio eu. Accumsan tortor posuere ac ut. Consectetur lorem donec massa sapien faucibus et molestie ac. Lectus vestibulum mattis ullamcorper velit. Placerat in egestas erat imperdiet sed euismod nisi porta lorem. Id volutpat lacus laoreet non curabitur gravida arcu. Duis at tellus at urna condimentum. Auctor elit sed vulputate mi sit amet mauris commodo quis. Lectus mauris ultrices eros in cursus turpis massa. Quam viverra orci sagittis eu volutpat odio. Vitae semper quis lectus nulla at volutpat diam ut. Nibh sit amet commodo nulla facilisi. Iaculis eu non diam phasellus. Consectetur lorem donec massa sapien faucibus. Consequat semper viverra nam libero justo laoreet sit amet. Semper auctor neque vitae tempus quam pellentesque nec nam. Et malesuada fames ac turpis.",
-    ].values();
-    
-    setInterval(()=> {
-      const next = dataIterator.next();
-      if(!next.done) {
-        this.answerSubscriber?.next(next.value);
-      }else {
-        this.answerSubscriber?.complete();
-      }
-    }, 2000);
+    const data = {
+      llm_type: llmType
+    }
+    return this.http.post<any>(`http://${this.addr}/api/set_llm`, data, { headers }).pipe(
+      map(res=>res.message)
+    )
+  }
+
+  checkAddressValidity(addr: string) {
+    return this.http.get(`http://${addr}/api/check_connection`);
+  }
+
+  queryLLM(query: string) {
+    this.socketConn.emit(SockEvents.SEND, query);
   }
 }

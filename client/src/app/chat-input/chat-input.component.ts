@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 
 import { LlmService } from '../llm.service';
 
@@ -10,10 +10,12 @@ import { LlmService } from '../llm.service';
   styleUrl: './chat-input.component.css'
 })
 export class ChatInputComponent {
+  @Output() queryEvent = new EventEmitter<boolean>();
 
   constructor(private llmService: LlmService) {}
 
   sendQuery(query: string) {
-    this.llmService.queryLLM();
+    this.llmService.queryLLM(query);
+    this.queryEvent.emit(true);
   }
 }

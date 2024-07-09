@@ -1,9 +1,7 @@
 import { Component, AfterViewInit } from '@angular/core';
-import { LlmService } from '../llm.service';
+import { LlmService, ActiveLlms } from '../llm.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { InternalStorageService, Details } from '../internal-storage.service';
 
 type LlmItem = {value: string, label: string}
 
@@ -23,8 +21,6 @@ export class LlmSelectorComponent implements AfterViewInit {
 
   constructor(
     private llmService: LlmService, 
-    private http: HttpClient,
-    private internalStorage: InternalStorageService
   ) {}
 
   getLlmList() {
@@ -34,16 +30,9 @@ export class LlmSelectorComponent implements AfterViewInit {
   changeLLM(llmItem: any) {
     
     this.showLoader = true;
-    const address = this.internalStorage.get(Details.ADDRESS);
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
-    const data = {
-      llm_type: llmItem.value
-    }
-    this.http.post<any>(`http://${address}/api/set_llm`, data, { headers }).subscribe({
-      next : (res)=> {
-        console.log(res.message);
+    this.llmService.setLlm(llmItem.value).subscribe({
+      next : (msg)=> {
+        console.log(msg);
         this.selectedLlm = llmItem;
       },
       error : (err)=> {
@@ -62,17 +51,20 @@ export class LlmSelectorComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
 
-      this.llmService.getLlmList().then(res=> {
+      this.llmService.getLlmList().subscribe({
+        next: (res: ActiveLlms)=>{
         
-        this.llmList = res.options.map(el=>{return {value: el, label: el}});
-        const selectedLlm = this.llmList.find(el=>el.value === res.selected);
-        if(!selectedLlm) {
-          console.error("Could not set the selected LLM as server returned a non existent label");
-        }else {
-          this.selectedLlm = selectedLlm;
+          this.llmList = res.options.map((el: string)=>{return {value: el, label: el}});
+          const selectedLlm = this.llmList.find(el=>el.value === res.selected);
+          if(!selectedLlm) {
+            console.error("Could not set the selected LLM as server returned a non existent label");
+          }else {
+            this.selectedLlm = selectedLlm;
+          }
+        },
+        error : (error: any)=> {
+          console.error(error);
         }
-      }).catch(error=> {
-        console.error(error);
       });
   }
 }

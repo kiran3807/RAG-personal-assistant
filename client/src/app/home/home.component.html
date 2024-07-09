@@ -4,6 +4,6 @@
         <button (click)="navigateConnectionInit($event)" class="resetButton">Reset details</button>
     </div>
 
-    <app-chat-display></app-chat-display>
-    <app-chat-input></app-chat-input>
+    <app-chat-display [querySent]="querySentObservable"></app-chat-display>
+    <app-chat-input (queryEvent)="onQuerySend()"></app-chat-input>
 </div>

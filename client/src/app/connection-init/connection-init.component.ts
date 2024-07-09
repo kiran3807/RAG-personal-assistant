@@ -4,7 +4,6 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators  } from '@angul
 import { CommonModule } from '@angular/common';
 import { AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router } from '@angular/router';
-import { HttpClient, HttpHeaders, HttpClientModule } from '@angular/common/http';
 import { map, catchError } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -27,7 +26,6 @@ export class ConnectionInitComponent implements OnInit{
     fb: FormBuilder, 
     private router: Router,
     private internalStorage: InternalStorageService,
-    private http: HttpClient
   ) {
     this.form = fb.group(
       {
@@ -37,7 +35,7 @@ export class ConnectionInitComponent implements OnInit{
         asyncValidators : [(control: AbstractControl)=> {
           
           const addr = control.get("llmAddress")?.value;
-          return this.http.get(`http://${addr}/api/check_connection`)
+          return this.llmService.checkAddressValidity(addr)
           .pipe(
             catchError((error)=> {
               return of({connected:false});

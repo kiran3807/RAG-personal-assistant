@@ -23,7 +23,19 @@ def check_connection():
     message = {
         'connected': True
     }
-    return jsonify(message)
+    return jsonify(message), 200
+
+@app.route('/api/get_llm_list', methods=['GET'])
+def get_llm_list():
+    llm_types = []
+    for llm_type in LLM_TYPE:
+        llm_types.append(llm_type.name)
+    
+    response = {
+        'options' : llm_types,
+        'selected' : LLM_TYPE.PHI.name
+    }
+    return jsonify(response), 200
 
 @app.route('/api/set_llm', methods=['POST'])
 def set_llm():
@@ -73,7 +85,7 @@ def generate_stream_response(message):
         socketio.emit('server_stream_response', {"end" : True, "time_taken" : end-start}, room=sid)
         
         socketio.sleep(0)
-        disconnect(sid=sid)
+        #disconnect(sid=sid)
         
     asyncio.run(stream_response_task(message, request.sid))
 
